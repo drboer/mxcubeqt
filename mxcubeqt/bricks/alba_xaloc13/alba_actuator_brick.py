@@ -33,7 +33,7 @@ __category__ = "ALBA"
 #
 # These state list is as in ALBAEpsActuator.py
 #
-STATE_OUT, STATE_IN, STATE_MOVING, STATE_FAULT, STATE_ALARM, STATE_UNKNOWN = (
+STATE_IN, STATE_OUT, STATE_MOVING, STATE_FAULT, STATE_ALARM, STATE_UNKNOWN = (
     0,
     1,
     9,
@@ -43,8 +43,8 @@ STATE_OUT, STATE_IN, STATE_MOVING, STATE_FAULT, STATE_ALARM, STATE_UNKNOWN = (
 )
 
 STATES = {
-    STATE_IN: colors.LIGHT_GREEN,
-    STATE_OUT: colors.LIGHT_GRAY,
+    STATE_IN: colors.LIGHT_GRAY,
+    STATE_OUT: colors.LIGHT_GREEN,
     STATE_MOVING: colors.LIGHT_YELLOW,
     STATE_FAULT: colors.LIGHT_RED,
     STATE_ALARM: colors.LIGHT_RED,
@@ -89,9 +89,10 @@ class AlbaActuatorBrick(BaseWidget):
 
         # Other ---------------------------------------------------------------
         self.setToolTip(
-            "Main information about machine current, "
-            + "machine status and top-up remaining time."
+            "To control the photon shutter "
         )
+
+        #self.widget.stateLabel.hide()
 
     def property_changed(self, property_name, old_value, new_value):
         if property_name == "mnemonic":
@@ -103,6 +104,7 @@ class AlbaActuatorBrick(BaseWidget):
                 )
 
             self.actuator_hwo = self.get_hardware_object(new_value)
+            self.update()
             if self.actuator_hwo is not None:
                 self.setEnabled(True)
                 self.connect(
@@ -134,6 +136,11 @@ class AlbaActuatorBrick(BaseWidget):
                 self.widget.stateLabel.setText(status)
                 colors.set_widget_color(self.widget.stateLabel, STATES[state])
 
+                #self.widget.cmdInButton.setEnabled(True)
+                #self.widget.cmdOutButton.setEnabled(True)
+                #self.widget.cmdInButton.setChecked(True)
+                #self.widget.cmdOutButton.setChecked(True)
+
                 self.widget.cmdInButton.setEnabled(False)
                 self.widget.cmdOutButton.setEnabled(False)
                 self.widget.cmdInButton.setChecked(False)
@@ -153,12 +160,12 @@ class AlbaActuatorBrick(BaseWidget):
             self.update()
 
     def do_cmd_in(self):
+        if self.actuator_hwo.username == 'Photon Shutter': # for photon shuter, close calls do_cmd_out
+            logging.getLogger("HWR").info("Sending supervisor to transfer phase")
+            HWR.beamline.supervisor.set_phase("Transfer")
         if self.actuator_hwo is not None:
             self.actuator_hwo.cmd_in()
 
     def do_cmd_out(self):
-        if self.actuator_hwo.username == 'Photon Shutter': # for photon shuter, close calls do_cmd_out
-            logging.getLogger("HWR").info("Sending supervisor to transfer phase")
-            HWR.beamline.supervisor.set_phase("Transfer")
         if self.actuator_hwo is not None:
             self.actuator_hwo.cmd_out()

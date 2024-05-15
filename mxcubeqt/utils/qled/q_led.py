@@ -63,10 +63,10 @@ class QLed(qt_import.QWidget):
         self.value = value
         if self.value:
             self.color = self.on_color
-            self.message = "On"
+            self.message = "Out"
         else:
             self.color = self.off_color
-            self.message = "Off"
+            self.message = "In"
         self._update()
 
     def toggle(self, value):

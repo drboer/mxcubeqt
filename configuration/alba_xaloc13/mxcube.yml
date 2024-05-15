@@ -7669,7 +7669,7 @@
               name: in_cmd_name
               old_value: ''
               type: string
-              value: Open
+              value: Close
             - comment: Allow to control brick in all modes
               default_value: 0
               hidden: false
@@ -7697,7 +7697,7 @@
               name: out_cmd_name
               old_value: ''
               type: string
-              value: Close
+              value: Open
             type: alba_actuator_brick
           connections: []
           name: vbox2
