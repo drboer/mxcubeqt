@@ -72,12 +72,14 @@ class AlbaCryostreamBrick(BaseWidget):
             if self.cryostream_hwo is not None:
                 self.disconnect(
                     self.cryostream_hwo,
-                    qt_import.SIGNAL("stateChanged"),
+                    #qt_import.SIGNAL("stateChanged"),
+                    "stateChanged",
                     self.cryostream_state_changed,
                 )
                 self.disconnect(
                     self.cryostream_hwo,
-                    qt_import.SIGNAL("gasTempChanged"),
+                    #qt_import.SIGNAL("gasTempChanged"),
+                    "gasTempChanged",
                     self.cryostream_gas_temp_changed,
                 )
             self.cryostream_hwo = self.get_hardware_object(new_value)
@@ -85,12 +87,14 @@ class AlbaCryostreamBrick(BaseWidget):
                 self.setEnabled(True)
                 self.connect(
                     self.cryostream_hwo,
-                    qt_import.SIGNAL("stateChanged"),
+                    #qt_import.SIGNAL("stateChanged"),
+                    "stateChanged",
                     self.cryostream_state_changed,
                 )
                 self.connect(
                     self.cryostream_hwo,
-                    qt_import.SIGNAL("gasTempChanged"),
+                    #qt_import.SIGNAL("gasTempChanged"),
+                    "gasTempChanged",
                     self.cryostream_gas_temp_changed,
                 )
                 self.cryostream_hwo.force_emit_signals()
