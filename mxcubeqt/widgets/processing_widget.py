@@ -133,7 +133,7 @@ class ProcessingWidget(qt_import.QWidget):
         self.processing_widget.num_residues_label.setHidden(True)
         self.processing_widget.num_residues_ledit.setHidden(True)
         self.processing_widget.run_offline_processing_cbox.setHidden(True)
-        self.processing_widget.run_online_processing_cbox.setHidden(True)
+        self.processing_widget.run_online_processing_cbox.setHidden(False)
         
         if HWR.beamline.offline_processing_methods:
             cbox_text = "Run offline processing ("

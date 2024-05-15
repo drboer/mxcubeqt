@@ -47,7 +47,7 @@ class PlotWidget(qt_import.QWidget):
         self.two_dim_plot.ui.histogram.hide()
         self.two_dim_plot.ui.roiBtn.hide()
         self.two_dim_plot.ui.menuBtn.hide()
-        self.two_dim_plot.setFixedWidth(400)
+        #self.two_dim_plot.setFixedWidth(400)
 
         hlayout = qt_import.QHBoxLayout(self)
         hlayout.addWidget(self.one_dim_plot)
@@ -94,6 +94,8 @@ class PlotWidget(qt_import.QWidget):
     def set_plot_type(self, plot_type):
         self.one_dim_plot.setVisible(plot_type == "1D")
         self.two_dim_plot.setVisible(plot_type == "2D")
+        #if plot_type == "2D":
+            #self.two_dim_plot.set
 
     def add_curve(self, key, y_array, x_array, color):
         self.curves_dict[key] = self.one_dim_plot.plot(
@@ -101,7 +103,7 @@ class PlotWidget(qt_import.QWidget):
             x=x_array,
             symbolPen='w',
             symbolBrush=color,
-            symbolSize=3
+            symbolSize=6,
         )
         self.visible_curve = key
 
@@ -176,7 +178,8 @@ class PlotWidget(qt_import.QWidget):
             if key == curve_key:
                 self.curves_dict[key].show()
                 self.visible_curve = key
-                return
+            else:
+                self.curves_dict[key].hide()
 
     def one_dim_plot_mouse_moved(self, event_pos):
         mouse_point = self.one_dim_plot.plotItem.vb.mapSceneToView(event_pos)

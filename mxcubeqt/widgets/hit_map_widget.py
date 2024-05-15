@@ -24,6 +24,7 @@ from mxcubeqt.utils import qt_import
 from widgets.pyqtgraph_widget import PlotWidget
 from mxcubecore import HardwareRepository as HWR
 
+import logging
 
 __credits__ = ["MXCuBE collaboration"]
 __license__ = "LGPLv3+"
@@ -59,7 +60,7 @@ class HitMapWidget(qt_import.QWidget):
         self.__best_pos_list = None
         self.__hitmap_clicked = False
         self.__enable_continues_image_display = False
-        #self.__tooltip_text = None
+        self.__tooltip_text = None
         self.selected_image_serial = None
 
         # Graphic elements ----------------------------------------------------
@@ -172,10 +173,14 @@ class HitMapWidget(qt_import.QWidget):
         self._autoscale_button.clicked.connect(self.autoscale_pressed)
 
         # Other ---------------------------------------------------------------
-        #self.__tooltip_text = (
-        #    "Double click to move to the position. " + "Right click to open menu."
-        #)
-        #self._osc_hit_map_plot.setToolTip(self.__tooltip_text)
+        self.__tooltip_text = (
+           "Single click to send to ADXV,\n" + "Right click to open menu."
+        )
+        self._osc_hit_map_plot.setToolTip(self.__tooltip_text)
+        self.__tooltip_text = (
+           "Double click to move to the position.\nSingle click to send to ADXV,\n" + "Right click to open menu."
+        )
+        self._grid_hit_map_plot.setToolTip(self.__tooltip_text)
         self._hit_map_popup_menu.addSeparator()
         self._hit_map_popup_menu.addAction(
             "Move to position", self.move_to_position_clicked
@@ -265,7 +270,9 @@ class HitMapWidget(qt_import.QWidget):
             )
         self._osc_hit_map_plot.hide_all_curves()
         self._osc_hit_map_plot.show_curve(self.__score_key)
+
         self._osc_hit_map_plot.autoscale_axes()
+        #self._osc_hit_map_plot.one_dim_plot.setTitle( self._score_type_cbox.currentText() )
 
         if self.__grid:
             (num_col, num_row) = self.__grid.get_col_row_num()
@@ -294,9 +301,15 @@ class HitMapWidget(qt_import.QWidget):
         self.__score_key = self.__result_types[index]["key"]
 
         self._osc_hit_map_plot.hide_all_curves()
+        if self.__score_key == "spots_resolution": 
+            self._osc_hit_map_plot.curves_dict[self.__score_key].getViewBox().invertY(True)
+        else:
+            self._osc_hit_map_plot.curves_dict[self.__score_key].getViewBox().invertY(False)
+
         self._osc_hit_map_plot.show_curve(self.__score_key)
         self._osc_hit_map_plot.autoscale_axes()
         self.adjust_y_labels()
+        #self._osc_hit_map_plot.one_dim_plot.setTitle( self._score_type_cbox.currentText() )
 
         if self.__grid:
             self._grid_hit_map_plot.plot_result(
@@ -309,16 +322,12 @@ class HitMapWidget(qt_import.QWidget):
         
     def adjust_y_labels(self):
         labels = []
-        positions = np.linspace(0, self.__results_raw[self.__score_key].max(), 5)
-
         if self.__score_key == "spots_resolution":
-            labels.append("inf")
-            for item in positions[1:]:
-                if item == 0:
-                   labels.append("0")
-                else:
-                   labels.append("%.2f" % (1.0 / item))
+            positions = np.linspace(0.5, self.__results_raw[self.__score_key].max()*0.8, 5)
+            for item in positions:
+                   labels.append("%.2f" % item)
         else:
+            positions = np.linspace(0, self.__results_raw[self.__score_key].max(), 5)
             for item in positions:
                 labels.append("%.2f" % item)
 
@@ -354,9 +363,13 @@ class HitMapWidget(qt_import.QWidget):
                     pos_x = 0
                 elif pos_x > len(self.__results_raw[self.__score_key])- 1:
                     pos_x = len(self.__results_raw[self.__score_key]) - 1
-                if abs(pos_x - self.__selected_col) > 1:
+                if self.__selected_col:
+                    if abs(pos_x - self.__selected_col) > 1:
+                        do_update = True
+                else:
+                    do_update = True 
+                if do_update:
                     self.__selected_col = pos_x
-                    do_update = True
 
         if do_update and self.__hitmap_clicked:
             if do_update:
@@ -407,9 +420,12 @@ class HitMapWidget(qt_import.QWidget):
             if self.__grid:
                 self.__score_key = "score"
                 self._score_type_cbox.setCurrentIndex(1)
+                self.show_plot('2D')
             else:
                 self.__score_key = "spots_resolution"
                 self._score_type_cbox.setCurrentIndex(0)
+                self.show_plot('1D')
+                self.score_type_changed(0)
             self.adjust_y_labels()
             self.__first_result = False
 
@@ -591,6 +607,7 @@ class HitMapWidget(qt_import.QWidget):
         """Moves to grid position x and y are positions in micrometers starting
            from left top corner (as graphical coordinates)
         """
+        
         osc_range = self.__data_collection.acquisitions[
             0
         ].acquisition_parameters.osc_range
@@ -702,3 +719,10 @@ class HitMapWidget(qt_import.QWidget):
             HWR.beamline.online_processing.run_processing(
                 self.__data_collection
             )
+
+    def show_plot(self, plot_type):
+        toggle = False
+        if plot_type == '1D': 
+            toggle = not toggle
+        self._osc_hit_map_plot.setHidden(not toggle)
+        self._grid_hit_map_plot.setHidden(toggle)

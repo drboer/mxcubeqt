@@ -123,16 +123,19 @@ class AlbaOnlineProcessingBrick(OnlineProcessingBrick):
     def show_hit_map(self):
         self.hit_map_widget.setHidden(False)
         self.hit_map_widget.setEnabled(True)
+        self.hit_map_visible = True
 	
     def hide_hit_map(self):
         self.hit_map_widget.setHidden(True)
+        self.hit_map_visible = False
 
     def update_processing_results(self, last_results):
         self.hit_map_widget.update_results(last_results)
         self.show_hit_map()
 
     def collect_started(self, owner, num_oscillations):
-        if HWR.beamline.collect.collect_experiment_type() != "Mesh":
-            self.hide_hit_map()
-        else:
+        #if HWR.beamline.collect.collect_experiment_type() != "Mesh":
+        if HWR.beamline.collect.run_online_processing != None:
             self.show_hit_map()
+        else:
+            self.hide_hit_map()

@@ -211,7 +211,7 @@ class CreateAdvancedWidget(CreateTaskBase):
                 "%.1f" % (beam_info["size_x"] * 1000)
             )
             self._advanced_methods_widget.ver_spacing_ledit.setText(
-                "%.1f" % (beam_info["size_x"] * 1000)
+                "%.1f" % (beam_info["size_y"] * 1000)
             )
         except:
             pass
@@ -231,10 +231,14 @@ class CreateAdvancedWidget(CreateTaskBase):
         else:
             grid_properties = selected_grid.get_properties()
             exp_time = float(self._acq_widget.acq_widget_layout.exp_time_ledit.text())
-            speed = grid_properties["yOffset"] / exp_time
-            if speed >= 2.25:
+            speed = grid_properties["xOffset"] / exp_time
+            if speed >= HWR.beamline.collect.mesh_fast_motor_max_velocity + 0.001:
                 logging.getLogger("GUI").error(
-                    "Translation speed %.3f is above the limit 2.25" % speed
+                    "Translation speed %.3f is above the limit of %.3f, increase the exposure time to a minimum of %s" % \
+                        (speed, 
+                         HWR.beamline.collect.mesh_fast_motor_max_velocity, 
+                         grid_properties["xOffset"] / HWR.beamline.collect.mesh_fast_motor_max_velocity,
+                        )
                 )
                 return False
             osc_range_per_frame = float(
@@ -355,8 +359,8 @@ class CreateAdvancedWidget(CreateTaskBase):
 
             if not self.dc_selected:
                 exp_time = max(
-                    float(grid_properties["yOffset"] / 2.245),
-                    self._acq_widget.exp_time_validator.bottom() + 0.00001,
+                    grid_properties["min_exp_time"],
+                    0.01
                 )
                 self._acq_widget.acq_widget_layout.exp_time_ledit.setText(
                     "%.6f" % exp_time
