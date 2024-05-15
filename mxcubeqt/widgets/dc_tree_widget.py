@@ -342,7 +342,11 @@ class DataCollectTree(qt_import.QWidget):
 
     def item_double_click(self):
         """Shows more details of a double clicked tree item"""
-        self.show_details()
+        if self.collecting: 
+            #TODO if collecting, setup this sample for mounting then collection finishes
+            pass
+        else:
+            self.show_details()
 
     def history_table_double_click(self, row, col):
         """Shows more details of a double clicked history view item"""
