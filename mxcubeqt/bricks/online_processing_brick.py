@@ -72,12 +72,20 @@ class OnlineProcessingBrick(BaseWidget):
             self.setEnabled(False)
 
     def populate_widget(self, item):
+        import logging
+        logging.getLogger("HWR").debug(
+            "online_processing_brick populate_widget: Type of queue_item is %s" % \
+                type(item.get_model())
+        )
         data_collection = item.get_model()
         if isinstance(item, queue_item.XrayCenteringQueueItem):
             data_collection = data_collection.mesh_dc
         self.hit_map_widget.set_data_collection(data_collection)
         if data_collection.is_executed():
             processing_results = data_collection.get_online_processing_results()
+            logging.getLogger("HWR").debug(
+                "processing_results %s" % processing_results
+            )
             self.hit_map_widget.set_results(
                     processing_results["raw"],
                     processing_results["aligned"]
