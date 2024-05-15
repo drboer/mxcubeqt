@@ -279,10 +279,11 @@ class CreateAdvancedWidget(CreateTaskBase):
                 self.setDisabled(False)
 
             if data_collection.is_mesh():
-                HWR.beamline.sample_view.select_shape(data_collection.grid)
-                self._advanced_methods_widget.grid_treewidget.setCurrentItem(
-                    self._grid_map[data_collection.grid]
-                )
+                if data_collection.grid:
+                    HWR.beamline.sample_view.select_shape(data_collection.grid)
+                    self._advanced_methods_widget.grid_treewidget.setCurrentItem(
+                        self._grid_map[data_collection.grid]
+                    )
 
                 self._path_template = data_collection.get_path_template()
                 self._data_path_widget.update_data_model(self._path_template)
