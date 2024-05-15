@@ -646,7 +646,9 @@ class TreeBrick(BaseWidget):
                     else:
                         item_text = "%s-%s" % (sample.proteinAcronym, sample.sampleName)
                     self.sample_changer_widget.sample_combo.addItem(item_text)
-                pass
+            except Exception as e: #BaseException:
+                #pass
+                logging.getLogger("Error %s" % e)
 
         self.sample_changer_widget.sample_label.setEnabled(True)
         self.sample_changer_widget.sample_combo.setEnabled(True)

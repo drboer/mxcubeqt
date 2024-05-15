@@ -72,7 +72,7 @@ class CatsStatusView(qt_import.QGroupBox, BaseWidget):
 
     def setState(self, state):
 
-        logging.getLogger().debug("SC StatusView. State changed %s" % str(state))
+        logging.getLogger("HWR").debug("SC StatusView. State changed %s" % str(state))
         color = sc_helper.SC_STATE_COLOR.get(state, None)
 
         if color is None:
@@ -209,7 +209,7 @@ class CatsSimpleBrick(SampleChangerBrick):
             self.baskets[-1].set_matrices(vials)
 
     def sc_state_changed(self, state, previous_state=None):
-        logging.getLogger().debug("SC State changed %s" % str(state))
+        logging.getLogger("HWR").debug("SC State changed %s" % str(state))
         SampleChangerBrick.sc_state_changed(self, state, previous_state)
 
         self.state = state
@@ -239,7 +239,10 @@ class CatsSimpleBrick(SampleChangerBrick):
         )  # handles init state None as False
 
         logging.getLogger("HWR").debug(
-            "updating buttons %s / %s / %s" % (running, poweredOn, self.state)
+            "updating buttons: Running %s / Powered %s / State %s" % (
+                running, poweredOn, 
+                sc_helper.SampleChangerState.tostring(self.state)
+            )
         )
 
         if not poweredOn:

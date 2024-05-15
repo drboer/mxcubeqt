@@ -151,10 +151,16 @@ class QueueItem(qt_import.QTreeWidgetItem):
 
     def set_background_color(self, color_index):
         self.previous_bg_brush = self.background(0)
-        color = colors.QUEUE_ENTRY_COLORS[color_index]
-        self.bg_brush = qt_import.QBrush(color)
-        self.setBackground(0, self.bg_brush)
-        self.setBackground(1, self.bg_brush)
+        try: 
+            color = colors.QUEUE_ENTRY_COLORS[color_index]
+            self.bg_brush = qt_import.QBrush(color)
+            self.setBackground(0, self.bg_brush)
+            self.setBackground(1, self.bg_brush)
+        except Exception as e:
+            import logging
+            logging.getLogger("HWR").debug("queue_item set_background_color error %s" % str(e) )
+            logging.getLogger("HWR").debug("color_index %s" % color_index)
+
 
     def restoreBackgroundColor(self):
         self.bg_brush = self.previous_bg_brush

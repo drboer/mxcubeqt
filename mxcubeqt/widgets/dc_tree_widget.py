@@ -529,7 +529,8 @@ class DataCollectTree(qt_import.QWidget):
             if self.show_sc_during_mount:
                 self.tree_brick.sample_mount_started.emit()
             items[0].setText(1, "Unloading sample...")
-            HWR.beamline.sample_view.clear_all()
+            #HWR.beamline.sample_view.clear_all()
+            HWR.beamline.sample_view.clear_all_shapes()
             logging.getLogger("GUI").\
                 info("All centred positions associated with this " +
                      "sample will be lost.")
@@ -568,13 +569,19 @@ class DataCollectTree(qt_import.QWidget):
                     else:
                         sample_changer.unload(22, location, wait=False)
                 except Exception as e:
+                    import traceback
                     items[0].setText(1, "Error in unloading")
-                    msg = "Error unloading sample, error " + str(e)
+                    msg = "Error unloading sample, error " + str(e) + "\n" + traceback.format_exc()
                     logging.getLogger("HWR").error(msg)
 
                 robot_action_dict["endTime"] = time.strftime("%Y-%m-%d %H:%M:%S")
                 if not sample_changer.has_loaded_sample():
+                    robot_action_dict['message'] = "Sample was successfully unloaded"
                     robot_action_dict['status'] = "SUCCESS"
+                    # The next lines should not be necessary, because of the info_changed_event emitted by Cats90 and arriving at the tree_brick
+                    #items[0].setText(1, "")
+                    #items[0].setOn(False)
+                    #items[0].set_mounted_style(False)
                 else:
                     robot_action_dict['message'] = "Sample was not unloaded"
                     robot_action_dict['status'] = "ERROR"
@@ -582,9 +589,6 @@ class DataCollectTree(qt_import.QWidget):
                 HWR.beamline.lims.store_robot_action(
                     robot_action_dict)
 
-            items[0].setText(1, "")
-            items[0].setOn(False)
-            items[0].set_mounted_style(False)
         self.enable_collect(True)
         self.tree_brick.enable_widgets.emit(True)
         self.tree_brick.sample_mount_finished.emit()
@@ -823,6 +827,9 @@ class DataCollectTree(qt_import.QWidget):
     def set_centring_method(self, method_number):
         """Sets centring method"""
         self.centring_method = method_number
+
+        logging.getLogger("HWR").\
+            debug('Centring method changed to number %d' % method_number)
 
         try:
             dm = HWR.beamline.diffractometer

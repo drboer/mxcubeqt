@@ -353,6 +353,9 @@ class TaskToolBoxWidget(qt_import.QWidget):
                 )
             else:
                 for item in items:
+                    logging.getLogger("HWR").debug(
+                        "Adding item %s" % str(item)
+                    )
                     shapes = HWR.beamline.sample_view.get_selected_points()
                     task_model = item.get_model()
                     # TODO Consider if GPhL workflow needs task-per-shape
@@ -361,6 +364,9 @@ class TaskToolBoxWidget(qt_import.QWidget):
                     # Create a new group if sample is selected
                     if isinstance(task_model, queue_model_objects.Sample):
                         task_model = self.create_task_group(task_model)
+                        logging.getLogger("HWR").debug(
+                            "Item task model vars %s" % vars(task_model)
+                        )
                         if self.tool_box.currentWidget() in (
                             self.discrete_page,
                             self.char_page,
