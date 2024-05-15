@@ -192,6 +192,11 @@ class CreateCharWidget(CreateTaskBase):
             HWR.beamline.characterisation.get_default_characterisation_parameters()
         )
         self._path_template.reference_image_prefix = "ref"
+        if HWR.beamline.session.synchrotron_name == "ALBA":
+            if HWR.beamline.session.proposal_number != None:
+                if HWR.beamline.session.proposal_number.split('-')[-1] in ['2019013247']:
+                    self._path_template.reference_image_prefix = ""
+
         # The num images drop down default value is 1
         # we would like it to be 2
         self._acquisition_parameters.num_images = 2

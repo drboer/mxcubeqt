@@ -639,9 +639,13 @@ class TreeBrick(BaseWidget):
             try:
                 if sample.containerSampleChangerLocation:
                     self.filtered_lims_samples.append(sample)
-                    item_text = "%s-%s" % (sample.proteinAcronym, sample.sampleName)
+                    if HWR.beamline.session.synchrotron_name == "ALBA":
+                        logging.getLogger("HWR").debug("tree_brick prooposal_number %s" % HWR.beamline.session.proposal_number)
+                        if HWR.beamline.session.proposal_number.split('-')[-1] in ['2019013247','2018002222']:
+                            item_text = "%s" % (sample.sampleName)
+                    else:
+                        item_text = "%s-%s" % (sample.proteinAcronym, sample.sampleName)
                     self.sample_changer_widget.sample_combo.addItem(item_text)
-            except BaseException:
                 pass
 
         self.sample_changer_widget.sample_label.setEnabled(True)
