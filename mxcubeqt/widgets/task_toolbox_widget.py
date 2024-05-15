@@ -457,8 +457,11 @@ class TaskToolBoxWidget(qt_import.QWidget):
 
         selected_items = self.tree_brick.get_selected_items()
         mounted_sample_item = self.tree_brick.dc_tree_widget.get_mounted_sample_item()
-        will_mount_sample = False
+        mounted_sample_selected = False
         diff_plan_item = None
+
+        logging.getLogger("HWR").debug("mounted_sample_item %s" % mounted_sample_item )
+        logging.getLogger("HWR").debug("Selected items %s" % str(selected_items) )
 
         tool_box_page_is_collect = False
         if self.tool_box.itemText(self.previous_page_index) == "Standard Collection" or \
@@ -466,18 +469,24 @@ class TaskToolBoxWidget(qt_import.QWidget):
             logging.getLogger("HWR").debug("Diffraction task page active")
             tool_box_page_is_collect = True
 
-        for item in selected_items:
+        #TODO: to run tasks on different samples, the collect_queue button should be used, so dont allow sample changes here
+        for item in selected_items: #to run tasks on different samples, the collect_queue button should be used
             if isinstance(item, (
                 queue_item.SampleQueueItem,
                 queue_item.OpticalCentringQueueItem,
                 queue_item.XrayCenteringQueueItem)):
-                if item != mounted_sample_item:
-                    will_mount_sample = True
+                if item == mounted_sample_item:
+                    mounted_sample_selected = True
+                else:
+                    item.setSelected( False )
             else:
                 deselect_diff_plan = False
                 sample_item = item.get_sample_view_item()
-                if sample_item != mounted_sample_item:
-                    will_mount_sample = True
+                if sample_item == mounted_sample_item:
+                    #logging.getLogger("HWR").debug("Mounted sample (%s) is the selected sample (%s)" % \
+                        #(sample_item, mounted_sample_item)
+                    #)
+                    mounted_sample_selected = True
                 if "Diffraction plan" in item.get_model().get_display_name():
                     if tool_box_page_is_collect:
                         logging.getLogger("HWR").debug("Diffraction plan selected")
@@ -486,7 +495,7 @@ class TaskToolBoxWidget(qt_import.QWidget):
                         deselect_diff_plan = True
                 if "Diffraction plan" in item.parent().get_model().get_display_name():
                     if tool_box_page_is_collect:
-                        logging.getLogger("HWR").debug("Diffraction plan selected")
+                        logging.getLogger("HWR").debug("Diffraction plan selected according to model")
                         diff_plan_item = item.parent()
                     else:
                         deselect_diff_plan = True
@@ -494,9 +503,8 @@ class TaskToolBoxWidget(qt_import.QWidget):
                     item.setSelected(False)
                     sample_item.setSelected(True)
 
-        if will_mount_sample:
-            conf_msg = "One or several not mounted samples are selected.\n" +\
-                       "Before collecting sample(s) will be mounted. Continue?"
+        if not mounted_sample_selected:
+            conf_msg = "The mounted sample was not selected. Use Add to queue to setup this task\nDo you want to select the mounted sample and continue?"
             if (
                 qt_import.QMessageBox.warning(
                       None, "Question", conf_msg,
@@ -505,19 +513,23 @@ class TaskToolBoxWidget(qt_import.QWidget):
                 == qt_import.QMessageBox.No
             ):
                 return
+            else:
+                mounted_sample_item.setSelected(True)
 
         # avoid duplicating data collection when clicking collect now for a diffraction plan
         if diff_plan_item is None:
-            self.create_task_button_click()
+            self.create_task_button_click() # This sets up a new data collection
         else:
             diff_plan_item.setCheckState(0, True)
             
+        #TODO: set the centring point to current point for the sample
         collect_items = []
         for item in self.tree_brick.dc_tree_widget.get_collect_items():
             if isinstance(item, (
                 queue_item.SampleCentringQueueItem,
                 queue_item.OpticalCentringQueueItem,
-                queue_item.XrayCenteringQueueItem)):
+                #queue_item.XrayCenteringQueueItem
+                )):
                 item.setOn(False)
                 item.setText(1, "Skipped")
                 item.set_strike_out(True)
