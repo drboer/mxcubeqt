@@ -178,6 +178,8 @@ class DataPathWidget(qt_import.QWidget):
             colors.set_widget_color(
                 self.data_path_layout.folder_ledit, colors.LIGHT_YELLOW
             )
+        self.update_system_environment()
+
 
     def _folder_ledit_change(self, new_value):
         base_image_dir = self._base_image_dir
@@ -308,6 +310,8 @@ class DataPathWidget(qt_import.QWidget):
 
         self.data_path_layout.base_path_ledit.setText(self._base_image_dir)
 
+        self.update_system_environment()
+
         #if HWR.beamline.session.synchrotron_name == "ALBA" :
             #TODO the run_number_ledit calls _run_number_ledit_change upon textChanged, but not always. 
             #  the ledit value is pudated in _run_number_ledit_change, so maybe call directly?
@@ -324,12 +328,35 @@ class DataPathWidget(qt_import.QWidget):
     def set_prefix(self, base_prefix):
         self._data_model.base_prefix = str(base_prefix)
         self.data_path_layout.prefix_ledit.setText(str(base_prefix))
+        logging.getLogger("HWR").debug(
+            "set_prefix prefix %s" % str( self.data_path_layout.prefix_ledit.text() ) 
+        )
+
         file_name = self._data_model.get_image_file_name()
         file_name = file_name.replace(
             "%" + str(self._data_model.precision) + "d",
             int(self._data_model.precision) * "#",
         )
         self.data_path_layout.file_name_value_label.setText(file_name)
+        self.update_system_environment()
+
+    def update_system_environment(self):
+        """
+          To update the environment of the system, eg sardana.
+          
+          TODO: THIS CAN NOT BE USED, BECAUSE THE SARDANA MACRO CRASHES MXCUBE WHEN STOPPING A COLLECTION
+        """
+        return #  THIS CAN NOT BE USED, BECAUSE THE SARDANA MACRO CRASHES MXCUBE WHEN STOPPING A COLLECTION
+        base = os.path.join(
+            str(self.data_path_layout.base_path_ledit.text()), 
+            str(self.data_path_layout.folder_ledit.text()),
+        )
+        if HWR.beamline.session != None and HWR.beamline.session.get_proposal() != 'local-user':
+            HWR.beamline.session.set_system_collect_env(
+                MXCollectDir = base, 
+                MXCollectPrefix = self.data_path_layout.prefix_ledit.text(), 
+                MXRunNumber = self.data_path_layout.run_number_ledit.text()
+            )
 
     def update_data_model(self, data_model):
         self._data_model = data_model
