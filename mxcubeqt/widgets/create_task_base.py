@@ -765,6 +765,20 @@ class CreateTaskBase(qt_import.QWidget):
     def _create_task(self, sample, shape, comments=None):
         pass
 
+    def get_generic_path_template(self):
+        path_template = deepcopy(self._path_template)
+        (data_directory, proc_directory) = self.get_default_directory(\
+                sub_dir = '<acronym>' 
+        )
+        path_template.directory = data_directory
+        path_template.process_directory = proc_directory
+        path_template.base_prefix = self.get_default_prefix(generic_name = True)
+
+        # Get the next available run number at this level of the model.
+        #path_template.run_number = HWR.beamline.queue_model.\
+            #get_next_run_number(self._path_template)
+        return path_template
+
     def _create_path_template(self, sample, path_template):
         """Creates path template and expands macro keywords:
            %n : container name (dewar, puck, etc)
@@ -773,6 +787,8 @@ class CreateTaskBase(qt_import.QWidget):
            %p : sample position
            %s : sample name
         """
+
+        logging.getLogger("HWR").debug("vars input path_template %s" % vars(path_template) )
 
         acq_path_template = deepcopy(path_template)
 
@@ -793,7 +809,7 @@ class CreateTaskBase(qt_import.QWidget):
 
         if "<acronym>" in acq_path_template.directory:
             prefix = self.get_default_prefix(sample)
-            acronym = prefix.split("-")[0]
+            acronym = prefix #.split("-")[0]
             acq_path_template.directory = acq_path_template.directory.replace(
                 "<acronym>", acronym
             )
@@ -835,13 +851,17 @@ class CreateTaskBase(qt_import.QWidget):
         acq_path_template.base_prefix = acq_path_template.base_prefix.replace(
             "%u", user_name
         )
-        acq_path_template.base_prefix
+        #acq_path_template.base_prefix
+        logging.getLogger("HWR").debug("vars acq_path_template %s" % vars(acq_path_template) )
 
         return acq_path_template
 
     def _create_acq(self, sample):
+
         parameters = self._acquisition_parameters
         path_template = self._path_template
+        #path_template = self.get_generic_path_template()
+        logging.getLogger("HWR").debug("vars path_template %s" % vars(path_template) )
         processing_parameters = self._processing_parameters
 
         acq = queue_model_objects.Acquisition()
