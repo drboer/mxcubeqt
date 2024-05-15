@@ -170,10 +170,7 @@ class DataPathWidget(qt_import.QWidget):
             self._data_model.run_number = int(new_value)
             self.data_path_layout.run_number_ledit.setText(str(new_value))
 
-            if HWR.beamline.session.synchrotron_name == "ALBA":
-                if HWR.beamline.session != None and HWR.beamline.session.get_proposal() != 'local-user':
-                    HWR.beamline.session.set_sardana_collect_env( MXRunNumber = new_value )
-
+                
             self.update_file_name()
             self.pathTemplateChangedSignal.emit()
         else:
