@@ -148,30 +148,22 @@ class DataPathWidget(qt_import.QWidget):
 
         self.data_path_layout.prefix_ledit.setText(new_value)
         self.data_path_layout.prefix_ledit.setCursorPosition(cursor_pos)
+
+        self._data_model.base_prefix = str(new_value)
+        self.update_file_name()
         
         # XALOC specific: Change subfolder When prefix is manually edited
-        # and preserve group (if any).
+        # and preserve group (if any). prefix itself is not changed
         if HWR.beamline.session.synchrotron_name == "ALBA":
             # include the new prefix from new_value with the current contents of the group folder
             prefix = new_value
             _group, _ = os.path.split( str(self.data_path_layout.folder_ledit.text()) )
             self.data_path_layout.folder_ledit.setText( os.path.join(_group, str(prefix)) )
-            #set the Sardana data collection environment variagles
-            base = os.path.join(
-               str(self.data_path_layout.base_path_ledit.text()), 
-               str(self.data_path_layout.folder_ledit.text()),
-            )
-            if HWR.beamline.session != None and HWR.beamline.session.get_proposal() != 'local-user':
-                HWR.beamline.session.set_sardana_collect_env( MXCollectPrefix = new_value, MXCollectDir = base )
-            #TODO the run_number_ledit calls _run_number_ledit_change upon textChanged, but not always. 
-            #  the ledit value is pudated in _run_number_ledit_change, so maybe call directly?
-
             # Find the next suitable/unused run number
             #self.data_path_layout.run_number_ledit.setText( str( self.next_available_run_number() ) )
-
-        self._data_model.base_prefix = str(new_value)
-        self.update_file_name()
-        self.pathTemplateChangedSignal.emit()
+        else: # the signal is emitted when setting the folder_ledit text in the ALBA specific code
+            self.pathTemplateChangedSignal.emit()
+        self.update_system_environment()
 
     def _run_number_ledit_change(self, new_value):
         if str(new_value).isdigit():
